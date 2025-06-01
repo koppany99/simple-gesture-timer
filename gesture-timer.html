@@ -1,295 +1,288 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Image Timer!</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="" />
-  <link rel="icon" href="favicon.png">
-  <style>    
-    #image {
-	object-fit: contain;
-	width: 100%;
-	height: 100%;
-	max-height: 90vh;
-	max-width: 90vw;
-    }
-    body {
-	margin: 0;
-	width: 100%;
-	height: 100%;
-	background: #343434;
-	color: white;
-	display: grid;
-	grid-template-columns: 1fr;
-	
-    }
-    .timersegment > input {
-	width: 3em;
-    }
-    .hidden {
-	display: none !important;
-    }
+    <head>
+	<meta charset="UTF-8" />
+	<title>Image Timer!</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<meta name="description" content="" />
+	<link rel="icon" href="favicon.png">
+	<style>    
+	 #image {
+             object-fit: contain;
+             width: 100%;
+             height: 100%;
+             max-height: 90vh;
+             max-width: 90vw;
+	 }
+	 body {
+             margin: 0;
+             width: 100%;
+             height: 100%;
+             background: #343434;
+             color: white;
+             display: grid;
+             grid-template-columns: 1fr;
+             
+	 }
+	 .timersegment > input {
+             width: 3em;
+	 }
+	 .hidden {
+             display: none !important;
+	 }
 
-    #timer {
-	display: flex;
-	gap: 5px;
-    }
-    #ui {
-	width: 100%;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-    }
-    
-    #content {
-	display: flex;
-	justify-content: center;
-	width: 100%;
-	height: 100%;
-    }
-    
-    #results {
-	margin-left: auto;
-	margin-right: auto;
-	display: grid;
-	grid-template-columns: repeat(5, 1fr);
-	padding: 10px;
-	gap: 10px;
-    }
-    #results > img {
-	object-fit: contain;
-	width: 100%;
-	height: 100%;
-    }
-  </style>
+	 #timer {
+             display: flex;
+             gap: 5px;
+	 }
+	 #ui {
+             width: 100%;
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+	 }
+	 
+	 #content {
+             display: flex;
+             justify-content: center;
+             width: 100%;
+             height: 100%;
+	 }
+	 
+	 #results {
+             margin-left: auto;
+             margin-right: auto;
+             display: grid;
+             grid-template-columns: repeat(5, 1fr);
+             padding: 10px;
+             gap: 10px;
+	 }
+	 #results > img {
+             object-fit: contain;
+             width: 100%;
+             height: 100%;
+	 }
+	</style>
 
-  <script>
-    // there is an other script tag at the bottom to register events
-    window.seconds = 0;
-    window.minutes = 0;
-    window.hours = 0;
-    window.currentImage = null;
-    window.paused = false;
-    window.countdown = 0;
-    window.interval = null;
-    window.displayedImages = [];
-    
-    function displayRandomImage() {
-	if(!window.imageFiles) return;
-	let index = Math.floor(
-	    Math.random() * window.imageFiles.length
-	);
-	window.displayedImages.push(index)
-	document.getElementById('image').src = URL.createObjectURL(
-	    window.imageFiles[index]
-	);
-    }
-    
-    function totalSeconds() {
-	return window.seconds + window.minutes * 60 + window.hours * 60 * 60;
-    }
+	<script>
+	 // there is an other script tag at the bottom to register events
+	 window.seconds = 0;
+	 window.minutes = 0;
+	 window.hours = 0;
+	 window.currentImage = null;
+	 window.paused = false;
+	 window.countdown = 0;
+	 window.interval = null;
+	 window.displayedImages = [];
+	 
+	 function displayRandomImage() {
+             if(!window.imageFiles) return;
+             let index = Math.floor(Math.random() * window.imageFiles.length);
+             window.displayedImages.push(index);
+             image.src = URL.createObjectURL(
+		 window.imageFiles[index]
+             );
+	 }
+	 
+	 function totalSeconds() {
+             return window.seconds + window.minutes * 60 + window.hours * 60 * 60;
+	 }
 
-    function togglePause() {
-	window.paused = !window.paused;
-    }
+	 function togglePause() {
+             window.paused = !window.paused;
+	 }
 
-    function countdownString() {
-	let ss = window.countdown % 60;
-	if(ss < 10) {
-	    ss = '0' + ss;
-	}
-	let mm = Math.floor(window.countdown / 60) % 60;
-	if(mm < 10){
-	    mm = '0' + mm;
-	}
-	let hh = Math.floor(window.countdown / 3600);
-	if(hh < 10){
-	    hh = '0' + hh;
-	}
-	let time;
-	if(hh > 0) {
-	    time = hh + ":" + mm + ":" + ss;
-	} else if (mm > 0) {
-	    time = mm + ":" + ss;
-	} else {
-	    time = ss;
-	}
-	return time
-    }
+	 function countdownString() {
+             let ss = window.countdown % 60;
+             if(ss < 10) {
+		 ss = '0' + ss;
+             }
+             let mm = Math.floor(window.countdown / 60) % 60;
+             if(mm < 10){
+		 mm = '0' + mm;
+             }
+             let hh = Math.floor(window.countdown / 3600);
+             if(hh < 10){
+		 hh = '0' + hh;
+             }
+             let time;
+             if(hh > 0) {
+		 time = hh + ":" + mm + ":" + ss;
+             } else if (mm > 0) {
+		 time = mm + ":" + ss;
+             } else {
+		 time = ss;
+             }
+             return time
+	 }
 
-    function hideId(id) {
-	document.getElementById(id).classList.add("hidden");
-    }
-    function unhideId(id) {
-	document.getElementById(id).classList.remove("hidden");
-    }
-    
-    function app() {
-	// called every second, after button is pressed
-	if(!window.paused) {
-	    if(document.getElementById('hideOnPause').checked) {
-		unhideId('image');
-	    }
-	    if(countdown <= 0) {
-		if(window.displayedImages.length
-		   >= Number(document.getElementById('imagecount').value)) {
-		    stopTimer();
-		} else {
-		    window.countdown = totalSeconds();
-		    displayRandomImage();
-		}
-	    } else {
-		window.countdown--;
-	    }
-	    let maxNum = document.getElementById('imagecount').value
-	    document.getElementById('images-remaining').textContent = `Image ${window.displayedImages.length}/${maxNum}`
-	    document.getElementById('time-remaining').textContent = countdownString();
-	} else if(document.getElementById('hideOnPause').checked) {
-	    hideId('image');
-	}
-    }
-    
-    function startTimer() {
-	if(window.interval != null) return;
-	if(!window.imageFiles) return;
-	if(totalSeconds() < 1) return;
-	window.displayedImages = [];
-	hideId('setup');
-	hideId('results');
-	unhideId('image');
-	unhideId('control');
-	document.getElementById('results').textContent = '';
-	window.interval = setInterval(app, 1000);
-    }
-    
-    function stopTimer() {
-	if(window.interval == null) return;
-	clearInterval(window.interval);
-	window.interval = null;
-	window.countdown = 0;
-	window.paused = false;
-	hideId('control');
-	unhideId('setup');
-	document.getElementById('image').src = "";
-	document.getElementById('time-remaining').textContent = "";
-        displayHistory();
-        hideId('image');
-	unhideId('results');
-    }
+	 function hideId(id) {
+             document.getElementById(id).classList.add("hidden");
+	 }
+	 function unhideId(id) {
+             document.getElementById(id).classList.remove("hidden");
+	 }
+	 
+	 function app() {
+             // called every second, after button is pressed
+             if(!window.paused) {
+		 if(hideOnPause.checked) {
+                     unhideId('image');
+		 }
+		 if(countdown <= 0) {
+                     if(window.displayedImages.length
+			 >= Number(imagecount.value)) {
+			 stopTimer();
+                     } else {
+			 window.countdown = totalSeconds();
+			 displayRandomImage();
+                     }
+		 } else {
+                     window.countdown--;
+		 }
+		 let maxNum = imagecount.value;
+		 imagesRemaining.textContent = `Image ${window.displayedImages.length}/${maxNum}`
+		 timeRemaining.textContent = countdownString();
+             } else if(hideOnPause.checked) {
+		 hideId('image');
+             }
+	 }
+	 
+	 function startTimer() {
+             if(window.interval != null) return;
+             if(!window.imageFiles) return;
+             if(totalSeconds() < 1) return;
+             window.displayedImages = [];
+             hideId('setup');
+             hideId('results');
+             unhideId('image');
+             unhideId('control');
+             results.textContent = '';
+             window.interval = setInterval(app, 1000);
+	 }
+	 
+	 function stopTimer() {
+             if(window.interval == null) return;
+             clearInterval(window.interval);
+             window.interval = null;
+             window.countdown = 0;
+             window.paused = false;
+             hideId('control');
+             unhideId('setup');
+             image.src = "";
+             timeRemaining.textContent = "";
+             displayHistory();
+             hideId('image');
+             unhideId('results');
+	 }
 
 
-    function displayHistory() {
-	let results = document.getElementById('results');
-	for(const index of window.displayedImages) {
-	    const image = new Image();
-	    image.src = URL.createObjectURL(
-		window.imageFiles[index]
-	    );
-	    results.appendChild(image);
-	}
-    }
-    
-    function skip() {
-	window.displayedImages.pop();
-	displayRandomImage();
-	window.countdown = totalSeconds();
-    }
-  </script>
-</head>
-<body>
-  <div id="ui">
-    <div id="setup">
-      <div>
-	<label for="directory">Directory:</label><br>
-	<input type="file" id="directory" webkitdirectory directory multiple /><br/>
-      </div>
-      <div>
-	or
-	<label for="files">Files:</label><br>
-	<input type="file" id="files" multiple /><br/>
-      </div>
-      <div>
-	<input type="checkbox" checked="true" id="hideOnPause"/>
-	<label for="hideOnPause">Hide current image on pause</label>
-      </div>
-      <div id="timer">
-	<div class="timersegment">
-	  <label for="timerHours">h:</label><br>      
-	  <input type="number" value="0" min="0" step="1" id="timerHours"/>
+	 function displayHistory() {
+             for(const index of window.displayedImages) {
+		 const image = new Image();
+		 image.src = URL.createObjectURL(
+                     window.imageFiles[index]
+		 );
+		 results.appendChild(image);
+             }
+	 }
+	 
+	 function skip() {
+             window.displayedImages.pop();
+             displayRandomImage();
+             window.countdown = totalSeconds();
+	 }
+	</script>
+    </head>
+    <body>
+	<div id="ui">
+	    <div id="setup">
+		<div>
+		    <label for="directory">Directory:</label><br>
+		    <input type="file" id="directory" webkitdirectory directory multiple /><br/>
+		</div>
+		<div>
+		    or
+		    <label for="files">Files:</label><br>
+		    <input type="file" id="files" multiple /><br/>
+		</div>
+		<div>
+		    <input type="checkbox" checked="true" id="hideOnPause"/>
+		    <label for="hideOnPause">Hide current image on pause</label>
+		</div>
+		<div id="timer">
+		    <div class="timersegment">
+			<label for="timerHours">h:</label><br>      
+			<input type="number" value="0" min="0" step="1" id="timerHours"/>
+		    </div>
+		    <div class="timersegment">
+			<label for="timerMinutes">m:</label><br>      
+			<input type="number" value="0" min="0" step="1" id="timerMinutes"/>
+		    </div>
+		    <div class="timersegment">
+			<label for="timerSeconds">s:</label><br>      
+			<input type="number" value="0" min="0" step="5" id="timerSeconds"/>
+		    </div>
+		    <div class="timersegment">
+			<label for="imagecount">num:</label><br>      
+			<input type="number" value="5" min="0" step="5" id="imagecount"/>
+		    </div>
+		</div>
+		<input type="button" onclick="startTimer()" value="start"/>
+	    </div>
+	    <div id="control" class="hidden">
+		<div id="buttons"> 
+		    <input type="button" onclick="togglePause()" value="pause"/>
+		    <input type="button" onclick="stopTimer()" value="stop"/>
+		    <input type="button" onclick="skip()" value="skip"/>
+		</div>
+	    </div>
+	    <div id="imagesRemaining"></div>
+	    <div id="timeRemaining"></div>	
 	</div>
-	<div class="timersegment">
-	  <label for="timerMinutes">m:</label><br>      
-	  <input type="number" value="0" min="0" step="1" id="timerMinutes"/>
+	<div id="content">
+	    <img class="hidden" src="" id="image">
+	    <div class="hidden" id="results"></div>
 	</div>
-	<div class="timersegment">
-	  <label for="timerSeconds">s:</label><br>      
-	  <input type="number" value="0" min="0" step="5" id="timerSeconds"/>
-	</div>
-	<div class="timersegment">
-	  <label for="imagecount">num:</label><br>      
-	  <input type="number" value="5" min="1" step="5" id="imagecount"/>
-	</div>
-      </div>
-	<input type="button" onclick="startTimer()" value="start"/>
-    </div>
-    <div id="control" class="hidden">
-      <div id="buttons"> 
-	<input type="button" onclick="togglePause()" value="pause"/>
-	<input type="button" onclick="stopTimer()" value="stop"/>
-	<input type="button" onclick="skip()" value="skip"/>
-      </div>
-    </div>
-  <div id="images-remaining"></div>
-  <div id="time-remaining"></div>
-  </div>
-  <div id="content">
-    <img class="hidden" src="" id="image">
-    <div class="hidden" id="results"></div>
-  </div>
-</body>
-<script>
-  function handleFileEvent(e) {
-      // make loaded *image* files global
-      window.imageFiles = [...e.target.files]
-	  .filter((image) => image.type.startsWith('image'));
-  }
-  
-  document.getElementById('files').addEventListener("change", handleFileEvent);
-  document.getElementById('directory').addEventListener("change", handleFileEvent);
+    </body>
+    <script>
+     function handleFileEvent(e) {
+	 // make loaded *image* files global
+	 window.imageFiles = [...e.target.files]
+             .filter((image) => image.type.startsWith('image'));
+     }
+     
+     files.addEventListener("change", handleFileEvent);
+     directory.addEventListener("change", handleFileEvent);
 
-  const timerSeconds = document.getElementById('timerSeconds');
-  const timerMinutes = document.getElementById('timerMinutes');
-  const timerHours = document.getElementById('timerHours');
+     function tallyTimer() {
+	 let seconds = Number(timerSeconds.value);
+	 let minutes = Number(timerMinutes.value);
+	 let hours = Number(timerHours.value);
 
-  function tallyTimer() {
-      let seconds = Number(timerSeconds.value);
-      let minutes = Number(timerMinutes.value);
-      let hours = Number(timerHours.value);
+	 if(seconds >= 60) {
+             minutes += Math.floor(seconds / 60);
+             seconds = seconds % 60;
+	 }
 
-      if(seconds >= 60) {
-	  minutes += Math.floor(seconds / 60);
-	  seconds = seconds % 60;
-      }
+	 if(minutes >= 60) {
+             hours += Math.floor(minutes / 60);
+             minutes = minutes % 60;
+	 }
 
-      if(minutes >= 60) {
-	  hours += Math.floor(minutes / 60);
-	  minutes = minutes % 60;
-      }
-
-      window.seconds = seconds;
-      timerSeconds.value = seconds;
-      
-      window.minutes = minutes;
-      timerMinutes.value = minutes;
-      
-      window.hours = hours;
-      timerHours.value = hours;
-  }
-  
-  timerSeconds.addEventListener("change", tallyTimer);
-  timerMinutes.addEventListener("change", tallyTimer);
-  timerHours.addEventListener("change", tallyTimer);
-  
-</script>
+	 window.seconds = seconds;
+	 timerSeconds.value = seconds;
+	 
+	 window.minutes = minutes;
+	 timerMinutes.value = minutes;
+	 
+	 window.hours = hours;
+	 timerHours.value = hours;
+     }
+     
+     timerSeconds.addEventListener("change", tallyTimer);
+     timerMinutes.addEventListener("change", tallyTimer);
+     timerHours.addEventListener("change", tallyTimer);
+     
+    </script>
 </html>
