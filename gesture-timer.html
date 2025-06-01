@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-	<meta charset="UTF-8" />
-	<title>Image Timer!</title>
-	<meta name="viewport" content="width=device-width,initial-scale=1" />
-	<meta name="description" content="" />
-	<link rel="icon" href="favicon.png">
-	<style>    
-	 #image {
+        <meta charset="UTF-8" />
+        <title>Image Timer!</title>
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="description" content="" />
+        <link rel="icon" href="favicon.png">
+        <style>    
+         #image {
              object-fit: contain;
              width: 100%;
              height: 100%;
              max-height: 90vh;
              max-width: 90vw;
-	 }
-	 body {
+         }
+         body {
              margin: 0;
              width: 100%;
              height: 100%;
@@ -23,324 +23,439 @@
              display: grid;
              grid-template-columns: 1fr;
              
-	 }
-	 .timersegment > input {
-             width: 3em;
-	 }
-	 .hidden {
-             display: none !important;
-	 }
+         }
 
-	 #timer {
+	 #setup {
+	     display: flex;
+	     flex-direction: column;
+	     gap: 2em;
+	 }
+	 
+         .timersegment > input {
+             width: 3em;
+         }
+
+         .hidden {
+             display: none !important;
+         }
+
+         #timer {
              display: flex;
              gap: 5px;
-	 }
-	 #ui {
+         }
+         #ui {
              width: 100%;
              display: flex;
              flex-direction: column;
              align-items: center;
-	 }
+         }
 
-	 #control {
-	     display: flex;
-	     flex-direction: column;
-	     align-items: center;
-	 }
-	 
-	 #content {
+         #control {
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+         }
+         
+         #content {
              display: flex;
              justify-content: center;
              width: 100%;
              height: 100%;
-	 }
-	 
-	 #results {
+         }
+         
+         #results {
              margin-left: auto;
              margin-right: auto;
              display: grid;
              grid-template-columns: repeat(5, 1fr);
              padding: 10px;
              gap: 10px;
-	 }
-	 #results > img {
+         }
+         #results > img {
              object-fit: contain;
              width: 100%;
              height: 100%;
-	 }
-	</style>
+         }
+        </style>
 
-	<script>
-	 // there is an other script tag at the bottom to register events
-	 window.seconds = 0;
-	 window.minutes = 0;
-	 window.hours = 0;
-	 window.currentImage = null;
-	 window.paused = false;
-	 window.countdown = 0;
-	 window.i = 0;
-	 window.interval = null;
-	 window.displayedImages = [];
+        <script>
+         // there is an other script tag at the bottom to register events
+         window.seconds = 0;
+         window.minutes = 0;
+         window.hours = 0;
+         window.currentImage = null;
+         window.paused = false;
+         window.countdown = 0;
+         window.i = 0;
+         window.interval = null;
+         window.displayedImages = [];
 
-	 function shuffleImages() {
-	     // Fisher–Yates Shuffle
+         function shuffleImages() {
+             // Fisher–Yates Shuffle
              if(!imageFiles) return;
-	     let m = imageFiles.length, i, t;
+             let m = imageFiles.length, i, t;
 
-	     while(m) {
-		 i = Math.floor(Math.random() * m--);
+             while(m) {
+                 i = Math.floor(Math.random() * m--);
 
-		 t = imageFiles[m];
-		 imageFiles[m] = imageFiles[i];
-		 imageFiles[i] = t;
-	     }
-	 }
+                 t = imageFiles[m];
+                 imageFiles[m] = imageFiles[i];
+                 imageFiles[i] = t;
+             }
+         }
 
-	 function displayNextImage() {
-	     countdown = totalSeconds();
-	     displayedImages.push(imageFiles[i]);
-	     image.src = URL.createObjectURL(
-		 imageFiles[i++]
+	 let preloadedImage;
+         function displayNextImage() {
+             countdown = totalSeconds();
+             displayedImages.push(imageFiles[i]);
+             image.src = URL.createObjectURL(
+                 imageFiles[i++]
              );
-	 }
-	 
-	 function displayRandomImage() {
+         }
+         
+         function displayRandomImage() {
              if(!imageFiles) return;
              let index = Math.floor(Math.random() * imageFiles.length);
              displayedImages.push(imageFiles[index]);
              image.src = URL.createObjectURL(
-		 imageFiles[index]
+                 imageFiles[index]
              );
-	 }
-	 
-	 function totalSeconds() {
+         }
+
+         function totalSeconds() {
              return seconds + minutes * 60 + hours * 60 * 60;
-	 }
+         }
 
-	 function togglePause() {
+         function togglePause() {
              paused = !paused;
-	 }
+         }
 
-	 function countdownString() {
+         function countdownString() {
              let ss = countdown % 60;
              if(ss < 10) {
-		 ss = '0' + ss;
+                 ss = '0' + ss;
              }
              let mm = Math.floor(countdown / 60) % 60;
              if(mm < 10){
-		 mm = '0' + mm;
+                 mm = '0' + mm;
              }
              let hh = Math.floor(countdown / 3600);
              if(hh < 10){
-		 hh = '0' + hh;
+                 hh = '0' + hh;
              }
              let time;
              if(hh > 0) {
-		 time = hh + ":" + mm + ":" + ss;
+                 time = hh + ":" + mm + ":" + ss;
              } else if (mm > 0) {
-		 time = mm + ":" + ss;
+                 time = mm + ":" + ss;
              } else {
-		 time = ss;
+                 time = ss;
              }
              return time
-	 }
+         }
 
-	 function hideId(id) {
+         function hideId(id) {
              document.getElementById(id).classList.add("hidden");
-	 }
-	 function unhideId(id) {
+         }
+         function unhideId(id) {
              document.getElementById(id).classList.remove("hidden");
-	 }
-	 
-	 function app() {
+         }
+         
+         function app() {
              // called every second, after button is pressed
              if(!paused) {
                  unhideId('image');
-		 if(countdown > 0) {
+                 if(countdown > 1) {
                      countdown--;
-		 } else {
-                     if(displayedImages.length
-			 >= Number(imagecount.value)) {
-			 stopTimer();
-                     } else {
-			 displayNextImage();
-                     }
-		 } 
-		 let maxNum = imagecount.value;
-		 imagesRemaining.textContent = `Image ${window.displayedImages.length}/${maxNum}`
-		 timeRemaining.textContent = countdownString();
+                 } else {
+                     displayNextImage();
+                 }
+		 if(playNotif.checked && countdown === Number(notifyBefore.value)) {
+		     sound.play();
+		 }
+                 if(displayedImages.length
+                     >= Number(imagecount.value)) {
+                     stopTimer();
+                 }
+                  
+                 let maxNum = imagecount.value;
+                 imagesRemaining.textContent = `Image ${window.displayedImages.length}/${maxNum}`
+                 timeRemaining.textContent = countdownString();
              } else if(hideOnPause.checked) {
-		 hideId('image');
+                 hideId('image');
              }
-	 }
-	 
-	 function startTimer() {
+         }
+         
+         function startTimer() {
              if(interval != null) return;
              if(!imageFiles) return;
              if(totalSeconds() < 1) return;
-	     if(Number(imagecount.value) <= 0) return;
-	     if(Number(imagecount.value) > imageFiles.length) {
-		 imagecount.value = imageFiles.length;
-	     };
-	     shuffleImages();
-	     displayedImages = [];
-	     i = 0;
+             if(Number(imagecount.value) <= 0) return;
+             if(Number(imagecount.value) > imageFiles.length) {
+                 imagecount.value = imageFiles.length;
+             };
+             shuffleImages();
+             displayedImages = [];
+             i = 0;
              hideId('setup');
              hideId('results');
              unhideId('image');
              unhideId('control');
+	     unhideId('timeRemaining')
              results.textContent = '';
+	     app();
              interval = setInterval(app, 1000);
-	 }
-	 
-	 function stopTimer() {
+         }
+         
+         function stopTimer() {
              if(interval == null) return;
              clearInterval(window.interval);
              interval = null;
              countdown = 0;
              paused = false;
              hideId('control');
+             hideId('timeRemaining')
              unhideId('setup');
              image.src = "";
-             timeRemaining.textContent = "";
              displayHistory();
              hideId('image');
              unhideId('results');
-	 }
+         }
 
-	 function displayHistory() {
-	     for(const i of displayedImages) {
-		 const image = new Image();
-		 image.src = URL.createObjectURL(i);
-		 results.appendChild(image);
-	     }
-	 }
+         function displayHistory() {
+             for(const i of displayedImages) {
+                 const image = new Image();
+                 image.src = URL.createObjectURL(i);
+                 results.appendChild(image);
+             }
+         }
 
-	 function previousImage() {
-	     if(displayedImages.length < 2) return;
-	     displayedImages.pop();
-	     displayedImages.pop();
-
-	     i-= 2;
-
-	     displayNextImage();
-	 }
-
-	 function nextImage() {
-	     if(displayedImages.length == imagecount.value) stopTimer();
-	     displayNextImage();
-	 }
-	 
-	 function skip() {
+         function previousImage() {
+             if(displayedImages.length < 2) return;
              displayedImages.pop();
-	     i--;
-	     imageFiles.splice(i, 1);
-	     if(Number(imagecount.value) > imageFiles.length) {
-		 imagecount.value = imageFiles.length;
-	     };
+             displayedImages.pop();
+
+             i-= 2;
+
              displayNextImage();
-	 }
-	</script>
+         }
+
+         function nextImage() {
+             if(displayedImages.length == imagecount.value) stopTimer();
+             displayNextImage();
+         }
+         
+         function skip() {
+             displayedImages.pop();
+             i--;
+             imageFiles.splice(i, 1);
+             if(Number(imagecount.value) > imageFiles.length) {
+                 imagecount.value = imageFiles.length;
+             };
+             displayNextImage();
+         }
+        </script>
     </head>
     <body>
-	<div id="ui">
-	    <div id="setup">
-		<div>
-		    <label for="directory">Directory:</label><br>
-		    <input type="file" id="directory" webkitdirectory directory multiple /><br/>
-		</div>
-		<div>
-		    or
-		    <label for="files">Files:</label><br>
-		    <input type="file" id="files" multiple /><br/>
-		</div>
-		<div>
-		    <input type="checkbox" checked="true" id="hideOnPause"/>
-		    <label for="hideOnPause">Hide current image on pause</label>
-		</div>
-		<div id="timer">
-		    <div class="timersegment">
-			<label for="timerHours">h:</label><br>      
-			<input type="number" value="0" min="0" step="1" id="timerHours"/>
+        <div id="ui">
+            <div id="setup">
+                <div>
+                    <label for="directory">Directory:</label><br>
+                    <input type="file" id="directory" webkitdirectory directory multiple /><br/>
+                    or
+                    <label for="files">Files:</label><br>
+                    <input type="file" id="files" multiple /><br/>
+                </div>
+                <div id="timer">
+                    <div class="timersegment">
+                        <label for="timerHours">h:</label><br>      
+                        <input type="number" value="0" min="0" step="1" id="timerHours"/>
+                    </div>
+                    <div class="timersegment">
+                        <label for="timerMinutes">m:</label><br>      
+                        <input type="number" value="0" min="0" step="1" id="timerMinutes"/>
+                    </div>
+                    <div class="timersegment">
+                        <label for="timerSeconds">s:</label><br>      
+                        <input type="number" value="0" min="0" step="5" id="timerSeconds"/>
+                    </div>
+                    <div class="timersegment">
+                        <label for="imagecount">num:</label><br>      
+                        <input type="number" value="5" min="0" step="5" id="imagecount"/>
+                    </div>
+                </div>
+                <div>
+                    <input type="checkbox" checked="true" id="hideOnPause"/>
+                    <label for="hideOnPause">Hide current image on pause</label>
+                </div>
+                <div id="notification">
+                    <div>
+                        <input type="checkbox" checked="true" id="playNotif"/>
+                        <label for="playNotif">Play sound before next image</label>
+                    </div>
+                    <div>
+                        <label for="soundUpload">Custom sound:</label><br>
+                        <input type="file" id="soundUpload" accept="audio/*" /><br/>
+                        <input type="button" onclick="sound.play()" value="Test Sound" />
+                    </div>
+		    <div>
+			<label for="notifyBefore">Play sound at last x seconds:</label><br>      
+                        <input type="number" value="10" min="1" id="notifyBefore"/>
 		    </div>
-		    <div class="timersegment">
-			<label for="timerMinutes">m:</label><br>      
-			<input type="number" value="0" min="0" step="1" id="timerMinutes"/>
-		    </div>
-		    <div class="timersegment">
-			<label for="timerSeconds">s:</label><br>      
-			<input type="number" value="0" min="0" step="5" id="timerSeconds"/>
-		    </div>
-		    <div class="timersegment">
-			<label for="imagecount">num:</label><br>      
-			<input type="number" value="5" min="0" step="5" id="imagecount"/>
-		    </div>
-		</div>
-		<input type="button" onclick="startTimer()" value="start"/>
-	    </div>
-	    <div id="control" class="hidden">
-		<div class="buttons">
-		    <input type="button" onclick="previousImage()" value="previous"/>
-		    <input type="button" onclick="skip()" value="skip"/>
-		    <input type="button" onclick="nextImage()" value="next"/>
-		</div>
-		<div class="buttons"> 
-		    <input type="button" onclick="togglePause()" value="pause"/>
-		    <input type="button" onclick="stopTimer()" value="stop"/>
-		</div>
-	    </div>
-	    <div id="imagesRemaining"></div>
-	    <div id="timeRemaining"></div>	
-	</div>
-	<div id="content">
-	    <img class="hidden" src="" id="image">
-	    <div class="hidden" id="results"></div>
-	</div>
+                </div>
+                <input type="button" onclick="startTimer()" value="start"/>
+            </div>
+            <div id="control" class="hidden">
+                <div class="buttons">
+                    <input type="button" onclick="previousImage()" value="previous"/>
+                    <input type="button" onclick="skip()" value="skip"/>
+                    <input type="button" onclick="nextImage()" value="next"/>
+                </div>
+                <div class="buttons"> 
+                    <input type="button" onclick="togglePause()" value="pause"/>
+                    <input type="button" onclick="stopTimer()" value="stop"/>
+                </div>
+            </div>
+            <div id="imagesRemaining"></div>
+            <div id="timeRemaining"></div>      
+        </div>
+        <div id="content">
+            <img class="hidden" src="" id="image">
+            <div class="hidden" id="results"></div>
+        </div>
     </body>
     <script>
      function handleFileEvent(e) {
-	 // make loaded *image* files global
-	 imageFiles = [...e.target.files]
+         // save loaded *image* files globally
+         imageFiles = [...e.target.files]
              .filter((image) => image.type.startsWith('image'));
-	 // file selector workaround
-	 let list = new DataTransfer();
-	 for (const file of imageFiles) {
+         // Make file select show correct number of files
+         let list = new DataTransfer();
+         for (const file of imageFiles) {
              list.items.add(file);
-	 }
-	 e.target.files = list.files;
+         }
+         e.target.files = list.files;
      }
      
      files.addEventListener("change", handleFileEvent);
      directory.addEventListener("change", handleFileEvent);
 
      function tallyTimer() {
-	 let seconds = Number(timerSeconds.value);
-	 let minutes = Number(timerMinutes.value);
-	 let hours = Number(timerHours.value);
+         let seconds = Number(timerSeconds.value);
+         let minutes = Number(timerMinutes.value);
+         let hours = Number(timerHours.value);
 
-	 if(seconds >= 60) {
+         if(seconds >= 60) {
              minutes += Math.floor(seconds / 60);
              seconds = seconds % 60;
-	 }
+         }
 
-	 if(minutes >= 60) {
+         if(minutes >= 60) {
              hours += Math.floor(minutes / 60);
              minutes = minutes % 60;
-	 }
+         }
 
-	 window.seconds = seconds;
-	 timerSeconds.value = seconds;
-	 
-	 window.minutes = minutes;
-	 timerMinutes.value = minutes;
-	 
-	 window.hours = hours;
-	 timerHours.value = hours;
+         window.seconds = seconds;
+         timerSeconds.value = seconds;
+         
+         window.minutes = minutes;
+         timerMinutes.value = minutes;
+         
+         window.hours = hours;
+         timerHours.value = hours;
      }
      
      timerSeconds.addEventListener("change", tallyTimer);
      timerMinutes.addEventListener("change", tallyTimer);
      timerHours.addEventListener("change", tallyTimer);
+
+     let sound;
+     soundUpload.addEventListener("change", function (e) {
+         sound = new Audio(URL.createObjectURL(e.target.files[0]));
+     })
+
      
+     // base64 encoded to keep it a single file
+     sound = new Audio("data:audio/mp3;base64," +
+`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
+gJx8nzcWBqdqKRTMF3siV8yFo1aW0FLC//uYZNIABbyD1f0xIAIooAhQoAAALC4PR/m9AkgAAD/D
+AAAAYlGY5A8BQJEpY0l2DAhQwGjMHIXoQkA4A15lEhYaoCSA2mlkXmJkilQUAKMKpq6YxBdmOQmP
+xarGpDNUt6loozY7a47sjgCWSuef6fqzeNak/O2yd3GiP2rQ5UKir0QDGHgppFIJO2lPTQ9GYzjc
+vyWHLWPzMOXrsqvzlijpqCpLZ2W0sujUxBe7FLuk3cuTN37Wvmbn3eYVrt4fgJpwCQBlBkBVAHB4
+YBIECAEANlBuHwD0cnyoA+RMsLEQACk+BjjVEaopk7wyEHoi2hfIB6DGw4w4rwCGKoc4cogYYhEd
+DvKqKKP5Kh8o1Dw/hq0gJI//+Q4Y0WSThdHKHcTRsgpUyU67K/9ZMmhkQ01FnCtiTJ4WaSJM+6KN
+aLf/8XCJuYZYkiLGZoYlIZYhwuYtl4xJT/////zE1YFt3E38acpMQU1FMy4xMDCqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//tYZL8ABQ5pTf5CIIIAAA/wwAAAAAABpBwA
+ACAAADSDgAAEqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq`)
     </script>
 </html>

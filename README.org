@@ -17,13 +17,14 @@ free program to do it with, so I made this.
 - show previous image
 - hide current image on pause (optional)
 - skip current image
+- play sound before next image (optional)
 - show all the non-skipped images after the session
 
 * How to install
 
 Download the =html= file from this repository and run it with a
-browser. That's it. It's done this way to make it run anywhere, and
-to support most image formats.
+browser. That's it, no other files are necessary. It's done this way
+to make it run anywhere, and to support most image formats.
 
 * How to use
 
