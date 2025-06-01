@@ -176,11 +176,11 @@
 
          function togglePause() {
              paused = !paused;
-	     if(paused) {
-		 pauseButton.value = "unpause"
-	     } else {
-		 pauseButton.value = "pause"
-	     }
+             if(paused) {
+                 pauseButton.value = "unpause"
+             } else {
+                 pauseButton.value = "pause"
+             }
              if(hideOnPause.checked) {
                  if(paused) {
                      hideId('image');
@@ -264,13 +264,29 @@
          }
          
          function startTimer() {
+             let errored = false;
+             let errorHTML = "";
              if(interval != null) return;
-             if(imageFiles.length == 0) return;
-             if(totalSeconds() < 1) return;
-             if(Number(imagecount.value) <= 0) return;
+             if(imageFiles.length == 0) {
+                 errorHTML += "<p>upload images to work with</p>";
+                 errored = true;
+             }
+             if(totalSeconds() < 1) {
+                 errorHTML += "<p>time per image needs to be at least 1 second</p>";
+                 errored = true;
+             }   
+             if(Number(imagecount.value) <= 0) {
+                 errorHTML += "<p>the session needs to be at least 1 image long</p>";
+                 errored = true;
+             };
              if(Number(imagecount.value) > imageFiles.length) {
                  imagecount.value = imageFiles.length;
              };
+             
+             errors.innerHTML = errorHTML;
+             if(errored) {
+                 return;
+             }
              shuffleImages();
              displayedImages = [];
              i = 0;
@@ -401,6 +417,7 @@
                     </div>
                 </div>
                 <input type="button" onclick="startTimer()" value="start"/>
+                <div id="errors"></div>
             </div>
             <div id="control" class="hidden">
                 <div class="buttons">
