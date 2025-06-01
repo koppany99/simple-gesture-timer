@@ -97,18 +97,17 @@
 	 }
 
 	 function displayNextImage() {
-	     i++;
 	     countdown = totalSeconds();
-	     displayedImages.push(i);
+	     displayedImages.push(imageFiles[i]);
 	     image.src = URL.createObjectURL(
-		 imageFiles[i]
+		 imageFiles[i++]
              );
 	 }
 	 
 	 function displayRandomImage() {
              if(!imageFiles) return;
              let index = Math.floor(Math.random() * imageFiles.length);
-             displayedImages.push(index);
+             displayedImages.push(imageFiles[index]);
              image.src = URL.createObjectURL(
 		 imageFiles[index]
              );
@@ -180,8 +179,12 @@
              if(!imageFiles) return;
              if(totalSeconds() < 1) return;
 	     if(Number(imagecount.value) <= 0) return;
+	     if(Number(imagecount.value) > imageFiles.length) {
+		 imagecount.value = imageFiles.length;
+	     };
 	     shuffleImages();
 	     displayedImages = [];
+	     i = 0;
              hideId('setup');
              hideId('results');
              unhideId('image');
@@ -206,11 +209,9 @@
 	 }
 
 	 function displayHistory() {
-	     for(const index of displayedImages) {
+	     for(const i of displayedImages) {
 		 const image = new Image();
-		 image.src = URL.createObjectURL(
-		     imageFiles[index]
-		 );
+		 image.src = URL.createObjectURL(i);
 		 results.appendChild(image);
 	     }
 	 }
@@ -234,6 +235,9 @@
              displayedImages.pop();
 	     imageFiles.splice(i, 1);
 	     i--;
+	     if(Number(imagecount.value) > imageFiles.length) {
+		 imagecount.value = imageFiles.length;
+	     };
              displayNextImage();
 	 }
 	</script>
