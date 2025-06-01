@@ -1,0 +1,46 @@
+* What is this?
+
+A simple tool used for gesture and figure drawing. Images are showed
+for a limited amount of time, and the user has to do their best to
+draw those images in that limited time
+
+* Why is this?
+
+I wanted to practice figure drawing with my own images, and I found no
+free program to do it with, so I made this.
+
+* Features
+- (you have to) use your own images
+- custom time
+- custom session length
+- pause 
+- hide current image on pause (optional)
+- skip current image
+- show all the non-skipped images after 
+
+* How to install
+
+Download the =html= file from this repository and run it with a
+browser. That's it. It's done this way to make it run anywhere, and
+to support most image formats.
+
+* How to use
+
+1. Select the images you want to practice with:
+   - You can either select a folder or a bunch of files
+   - everything has to be selected at once
+   - Uploading multiple times means forgetting your previous uploads
+2. Set how long you want to see each image
+3. How many images you want to see
+   - It's random, so you may see the same image twice in the same session
+4. Press start
+
+* Possible questions
+** Where does it upload the images to?
+Nowhere. Everything stays on your computer, the page even works completely without internet
+
+** How many images can I upload at the same time?
+I tested it with 14012 images on firefox and chrome (Roughly 40 GiB),
+and it worked perfectly fine. The most demanding part of this app is
+after you finish a session, when all images from the session are
+showed at once
