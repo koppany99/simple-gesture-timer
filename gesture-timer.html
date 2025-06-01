@@ -41,6 +41,12 @@
              flex-direction: column;
              align-items: center;
 	 }
+
+	 #control {
+	     display: flex;
+	     flex-direction: column;
+	     align-items: center;
+	 }
 	 
 	 #content {
              display: flex;
@@ -72,36 +78,60 @@
 	 window.currentImage = null;
 	 window.paused = false;
 	 window.countdown = 0;
+	 window.i = 0;
 	 window.interval = null;
 	 window.displayedImages = [];
+
+	 function shuffleImages() {
+	     // Fisher–Yates Shuffle
+             if(!imageFiles) return;
+	     let m = imageFiles.length, i, t;
+
+	     while(m) {
+		 i = Math.floor(Math.random() * m--);
+
+		 t = imageFiles[m];
+		 imageFiles[m] = imageFiles[i];
+		 imageFiles[i] = t;
+	     }
+	 }
+
+	 function displayNextImage() {
+	     i++;
+	     countdown = totalSeconds();
+	     displayedImages.push(i);
+	     image.src = URL.createObjectURL(
+		 imageFiles[i]
+             );
+	 }
 	 
 	 function displayRandomImage() {
-             if(!window.imageFiles) return;
-             let index = Math.floor(Math.random() * window.imageFiles.length);
-             window.displayedImages.push(index);
+             if(!imageFiles) return;
+             let index = Math.floor(Math.random() * imageFiles.length);
+             displayedImages.push(index);
              image.src = URL.createObjectURL(
-		 window.imageFiles[index]
+		 imageFiles[index]
              );
 	 }
 	 
 	 function totalSeconds() {
-             return window.seconds + window.minutes * 60 + window.hours * 60 * 60;
+             return seconds + minutes * 60 + hours * 60 * 60;
 	 }
 
 	 function togglePause() {
-             window.paused = !window.paused;
+             paused = !paused;
 	 }
 
 	 function countdownString() {
-             let ss = window.countdown % 60;
+             let ss = countdown % 60;
              if(ss < 10) {
 		 ss = '0' + ss;
              }
-             let mm = Math.floor(window.countdown / 60) % 60;
+             let mm = Math.floor(countdown / 60) % 60;
              if(mm < 10){
 		 mm = '0' + mm;
              }
-             let hh = Math.floor(window.countdown / 3600);
+             let hh = Math.floor(countdown / 3600);
              if(hh < 10){
 		 hh = '0' + hh;
              }
@@ -125,21 +155,18 @@
 	 
 	 function app() {
              // called every second, after button is pressed
-             if(!window.paused) {
-		 if(hideOnPause.checked) {
-                     unhideId('image');
-		 }
-		 if(countdown <= 0) {
-                     if(window.displayedImages.length
+             if(!paused) {
+                 unhideId('image');
+		 if(countdown > 0) {
+                     countdown--;
+		 } else {
+                     if(displayedImages.length
 			 >= Number(imagecount.value)) {
 			 stopTimer();
                      } else {
-			 window.countdown = totalSeconds();
-			 displayRandomImage();
+			 displayNextImage();
                      }
-		 } else {
-                     window.countdown--;
-		 }
+		 } 
 		 let maxNum = imagecount.value;
 		 imagesRemaining.textContent = `Image ${window.displayedImages.length}/${maxNum}`
 		 timeRemaining.textContent = countdownString();
@@ -149,24 +176,26 @@
 	 }
 	 
 	 function startTimer() {
-             if(window.interval != null) return;
-             if(!window.imageFiles) return;
+             if(interval != null) return;
+             if(!imageFiles) return;
              if(totalSeconds() < 1) return;
-             window.displayedImages = [];
+	     if(Number(imagecount.value) <= 0) return;
+	     shuffleImages();
+	     displayedImages = [];
              hideId('setup');
              hideId('results');
              unhideId('image');
              unhideId('control');
              results.textContent = '';
-             window.interval = setInterval(app, 1000);
+             interval = setInterval(app, 1000);
 	 }
 	 
 	 function stopTimer() {
-             if(window.interval == null) return;
+             if(interval == null) return;
              clearInterval(window.interval);
-             window.interval = null;
-             window.countdown = 0;
-             window.paused = false;
+             interval = null;
+             countdown = 0;
+             paused = false;
              hideId('control');
              unhideId('setup');
              image.src = "";
@@ -176,21 +205,36 @@
              unhideId('results');
 	 }
 
-
 	 function displayHistory() {
-             for(const index of window.displayedImages) {
+	     for(const index of displayedImages) {
 		 const image = new Image();
 		 image.src = URL.createObjectURL(
-                     window.imageFiles[index]
+		     imageFiles[index]
 		 );
 		 results.appendChild(image);
-             }
+	     }
+	 }
+
+	 function previousImage() {
+	     if(displayedImages.length < 2) return;
+	     displayedImages.pop();
+	     displayedImages.pop();
+
+	     i-= 2;
+
+	     displayNextImage();
+	 }
+
+	 function nextImage() {
+	     if(displayedImages.length == imagecount.value) stopTimer();
+	     displayNextImage();
 	 }
 	 
 	 function skip() {
-             window.displayedImages.pop();
-             displayRandomImage();
-             window.countdown = totalSeconds();
+             displayedImages.pop();
+	     imageFiles.splice(i, 1);
+	     i--;
+             displayNextImage();
 	 }
 	</script>
     </head>
@@ -231,10 +275,14 @@
 		<input type="button" onclick="startTimer()" value="start"/>
 	    </div>
 	    <div id="control" class="hidden">
-		<div id="buttons"> 
+		<div class="buttons">
+		    <input type="button" onclick="previousImage()" value="previous"/>
+		    <input type="button" onclick="skip()" value="skip"/>
+		    <input type="button" onclick="nextImage()" value="next"/>
+		</div>
+		<div class="buttons"> 
 		    <input type="button" onclick="togglePause()" value="pause"/>
 		    <input type="button" onclick="stopTimer()" value="stop"/>
-		    <input type="button" onclick="skip()" value="skip"/>
 		</div>
 	    </div>
 	    <div id="imagesRemaining"></div>
@@ -248,11 +296,11 @@
     <script>
      function handleFileEvent(e) {
 	 // make loaded *image* files global
-	 window.imageFiles = [...e.target.files]
+	 imageFiles = [...e.target.files]
              .filter((image) => image.type.startsWith('image'));
 	 // file selector workaround
 	 let list = new DataTransfer();
-	 for (const file of window.imageFiles) {
+	 for (const file of imageFiles) {
              list.items.add(file);
 	 }
 	 e.target.files = list.files;

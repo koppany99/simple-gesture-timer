@@ -13,10 +13,11 @@ free program to do it with, so I made this.
 - (you have to) use your own images
 - custom time
 - custom session length
-- pause 
+- pause
+- show previous image
 - hide current image on pause (optional)
 - skip current image
-- show all the non-skipped images after 
+- show all the non-skipped images after the session
 
 * How to install
 
@@ -32,7 +33,6 @@ to support most image formats.
    - Uploading multiple times means forgetting your previous uploads
 2. Set how long you want to see each image
 3. How many images you want to see
-   - It's random, so you may see the same image twice in the same session
 4. Press start
 
 * Possible questions
