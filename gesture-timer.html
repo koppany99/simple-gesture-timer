@@ -5,7 +5,6 @@
         <title>Image Timer!</title>
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <meta name="description" content="" />
-        <link rel="icon" href="favicon.png">
         <style>    
          #image {
              object-fit: contain;
@@ -25,12 +24,12 @@
              
          }
 
-	 #setup {
-	     display: flex;
-	     flex-direction: column;
-	     gap: 2em;
-	 }
-	 
+         #setup {
+             display: flex;
+             flex-direction: column;
+             gap: 2em;
+         }
+         
          .timersegment > input {
              width: 3em;
          }
@@ -79,17 +78,69 @@
         </style>
 
         <script>
-         // there is an other script tag at the bottom to register events
-         window.seconds = 0;
-         window.minutes = 0;
-         window.hours = 0;
-         window.currentImage = null;
+         // global variables
          window.paused = false;
-         window.countdown = 0;
-         window.i = 0;
-         window.interval = null;
-         window.displayedImages = [];
+         window.countdown = 0; // seconds until image-change
+         window.interval = null; // the id created by startInterval, used in stopTimer()
+         window.displayedImages = []; // to show images that weren't skipped
+         window.imageFiles = []; // images loaded by file input
+         window.i = 0; // the current index of imageFiles. Important for skipping around
 
+         // load settings that are in localstorage. Otherwise use default values
+         function loadSettings() {
+             let Seconds = localStorage.getItem("seconds");
+             if(Seconds) {
+                 timerSeconds.value = Seconds;
+             }
+             
+             let Minutes = localStorage.getItem("minutes");
+             if(Minutes) {
+                 timerMinutes.value = Minutes;
+             }
+
+             let Hours = localStorage.getItem("hours");
+             if(Hours) {
+                 timerHours.value = Hours;
+             }
+             // number of images
+             let ImageCount = localStorage.getItem("imagecount");
+             if (ImageCount) {
+                 imagecount.value = ImageCount;
+             }
+             // hide on pause
+             let HideOnPause = localStorage.getItem("hideOnPause");
+             if(HideOnPause) {
+                 hideOnPause.checked = HideOnPause == "true";
+             }
+             // play sound
+             let PlaySound = localStorage.getItem("playNotif");
+             if(PlaySound) {
+                 playNotif.checked = PlaySound == "true";
+             }
+             // when to play sound
+             let NotifyBefore = localStorage.getItem("notifyBefore");
+             if (NotifyBefore) {
+                 notifyBefore.value = NotifyBefore;
+             }
+             // sound
+             let Sound = localStorage.getItem("sound");
+             if (Sound) {
+                 sound = new Audio(Sound);
+             } else {
+                 sound = new Audio(originalSound);
+             }
+             // volume
+             let Volume = localStorage.getItem("volume");
+             if(Volume) {
+                 sound.volume = Number(Volume) / 100;
+                 volume.value = Volume;
+             }
+         }
+
+         // set settings once all javascript is available
+         document.addEventListener("DOMContentLoaded", loadSettings);
+
+         // shuffling ensures that all images are displayed once, and only once
          function shuffleImages() {
              // Fisher–Yates Shuffle
              if(!imageFiles) return;
@@ -104,25 +155,22 @@
              }
          }
 
-	 let preloadedImage;
          function displayNextImage() {
+             // reset timer
              countdown = totalSeconds();
-             displayedImages.push(imageFiles[i]);
+             
              image.src = URL.createObjectURL(
                  imageFiles[i++]
              );
-         }
-         
-         function displayRandomImage() {
-             if(!imageFiles) return;
-             let index = Math.floor(Math.random() * imageFiles.length);
-             displayedImages.push(imageFiles[index]);
-             image.src = URL.createObjectURL(
-                 imageFiles[index]
-             );
+
+             displayedImages.push(image.src);
+             displayRemaining();
          }
 
          function totalSeconds() {
+             const seconds = Number(timerSeconds.value);
+             const minutes = Number(timerMinutes.value);
+             const hours = Number(timerHours.value)
              return seconds + minutes * 60 + hours * 60 * 60;
          }
 
@@ -130,6 +178,13 @@
              paused = !paused;
          }
 
+         function resetSound() {
+             localStorage.removeItem("sound");
+             sound = new Audio(originalSound);
+             sound.volume = Number(volume.value) / 100;
+         }
+
+         // assemble the remaining time into a string
          function countdownString() {
              let ss = countdown % 60;
              if(ss < 10) {
@@ -154,33 +209,43 @@
              return time
          }
 
+         function displayRemaining() {
+             let target = imagecount.value;
+             let current = window.displayedImages.length;
+             imagesRemaining.textContent = `Image ${current}/${target}`;
+             timeRemaining.textContent = countdownString();
+         }
+
          function hideId(id) {
              document.getElementById(id).classList.add("hidden");
          }
          function unhideId(id) {
              document.getElementById(id).classList.remove("hidden");
          }
+
          
+         // called once every second, after session is started
          function app() {
-             // called every second, after button is pressed
              if(!paused) {
                  unhideId('image');
+		 // countdown, or switch image
                  if(countdown > 1) {
                      countdown--;
                  } else {
-                     displayNextImage();
+		     // switch image, or stop timer
+                     if(displayedImages.length < Number(imagecount.value)) {
+                         displayNextImage();
+                     } else {
+			 stopTimer();
+                     }
                  }
-		 if(playNotif.checked && countdown === Number(notifyBefore.value)) {
-		     sound.play();
-		 }
-                 if(displayedImages.length
-                     >= Number(imagecount.value)) {
-                     stopTimer();
+		 // play sound
+                 if(playNotif.checked && countdown === Number(notifyBefore.value)) {
+                     sound.play();
                  }
-                  
-                 let maxNum = imagecount.value;
-                 imagesRemaining.textContent = `Image ${window.displayedImages.length}/${maxNum}`
-                 timeRemaining.textContent = countdownString();
+                 
+                 // refresh ui timers
+                 displayRemaining();
              } else if(hideOnPause.checked) {
                  hideId('image');
              }
@@ -188,7 +253,7 @@
          
          function startTimer() {
              if(interval != null) return;
-             if(!imageFiles) return;
+             if(imageFiles.length == 0) return;
              if(totalSeconds() < 1) return;
              if(Number(imagecount.value) <= 0) return;
              if(Number(imagecount.value) > imageFiles.length) {
@@ -201,9 +266,9 @@
              hideId('results');
              unhideId('image');
              unhideId('control');
-	     unhideId('timeRemaining')
+             unhideId('timeRemaining')
              results.textContent = '';
-	     app();
+             app();
              interval = setInterval(app, 1000);
          }
          
@@ -225,35 +290,52 @@
          function displayHistory() {
              for(const i of displayedImages) {
                  const image = new Image();
-                 image.src = URL.createObjectURL(i);
+                 image.src = i;
                  results.appendChild(image);
              }
          }
 
          function previousImage() {
              if(displayedImages.length < 2) return;
+
+             // move back 2 images
              displayedImages.pop();
              displayedImages.pop();
+             i -= 2;
 
-             i-= 2;
-
+             // move forward 1
              displayNextImage();
          }
 
+         // for ui button to move forward an image
          function nextImage() {
              if(displayedImages.length == imagecount.value) stopTimer();
              displayNextImage();
          }
-         
+
          function skip() {
+             // move back 1 image
              displayedImages.pop();
              i--;
+
+             // if this was the last displayable image
+             if(i == imageFiles.length - 1) {
+                 stopTimer();
+                 return;
+             }
+
+             // remove image from roster
              imageFiles.splice(i, 1);
+
+             // adjust session length if necessary
              if(Number(imagecount.value) > imageFiles.length) {
                  imagecount.value = imageFiles.length;
              };
+             
              displayNextImage();
          }
+         
+         // there is an other script tag at the bottom to register events
         </script>
     </head>
     <body>
@@ -293,16 +375,17 @@
                         <input type="checkbox" checked="true" id="playNotif"/>
                         <label for="playNotif">Play sound before next image</label>
                     </div>
-		    <div>
-			<label for="notifyBefore">Play sound at last x seconds:</label><br>      
+                    <div>
+                        <label for="notifyBefore">Play sound at last x seconds:</label><br>      
                         <input type="number" value="10" min="1" id="notifyBefore"/>
-		    </div>
+                    </div>
                     <div>
                         <label for="soundUpload">Custom sound:</label><br>
                         <input type="file" id="soundUpload" accept="audio/*" /><br>
-			<label for="volume">Volume:</label><br>
-			<input type="range" id="volume" name="volume" value="100" min="0" max="100" />
-                        <input type="button" onclick="sound.play()" value="Test Sound" /> <br>
+                        <label for="volume">Volume:</label><br>
+                        <input type="range" id="volume" name="volume" value="100" min="0" max="100" />
+                        <input type="button" onclick="sound.play()" value="Play Sound" /> <br>
+                        <input type="button" onclick="resetSound()" value="Reset Sound" /> <br>
                     </div>
                 </div>
                 <input type="button" onclick="startTimer()" value="start"/>
@@ -328,20 +411,27 @@
     </body>
     <script>
      function handleFileEvent(e) {
-         // save loaded *image* files globally
-         imageFiles = [...e.target.files]
-             .filter((image) => image.type.startsWith('image'));
-         // Make file select show correct number of files
+         function isImage(possibleImage) {
+             // checking for image mime type
+             // eg: "image/png", "image/jpg", "image/webm", etc.
+             return possibleImage.type.startsWith('image'); 
+         }
+         // turn "FileList" into array, and remove non-images
+         imageFiles = [...e.target.files].filter(isImage);
+         // Workaround to show correct number of selected files in ui
          let list = new DataTransfer();
          for (const file of imageFiles) {
              list.items.add(file);
          }
          e.target.files = list.files;
      }
-     
+
+     // each event overwrites the current image-set, but
+     // fixing it would be difficult and might be confusing
      files.addEventListener("change", handleFileEvent);
      directory.addEventListener("change", handleFileEvent);
 
+     // translate seconds to minutes and minutes to hours
      function tallyTimer() {
          let seconds = Number(timerSeconds.value);
          let minutes = Number(timerMinutes.value);
@@ -357,13 +447,13 @@
              minutes = minutes % 60;
          }
 
-         window.seconds = seconds;
+         localStorage.setItem("seconds", seconds);
          timerSeconds.value = seconds;
          
-         window.minutes = minutes;
+         localStorage.setItem("minutes", minutes);
          timerMinutes.value = minutes;
          
-         window.hours = hours;
+         localStorage.setItem("hours", hours);
          timerHours.value = hours;
      }
      
@@ -371,19 +461,50 @@
      timerMinutes.addEventListener("change", tallyTimer);
      timerHours.addEventListener("change", tallyTimer);
 
+     // a few events, purely to save state for future session
+     playNotif.addEventListener("change", function (e) {
+        localStorage.setItem("playNotif", e.target.checked);
+     });
+     hideOnPause.addEventListener("change", function (e) {
+        localStorage.setItem("hideOnPause", e.target.checked);
+     });
+     notifyBefore.addEventListener("change", function (e) {
+         localStorage.setItem("notifyBefore", e.target.value);
+     });
+     imagecount.addEventListener("change", function (e) {
+        localStorage.setItem("imagecount", e.target.value);
+     });
+
      let sound;
      soundUpload.addEventListener("change", function (e) {
+         // make sound object and set it's volume
          sound = new Audio(URL.createObjectURL(e.target.files[0]));
-     })
+         sound.volume = Number(volume.value) / 100;
 
+         // if sound file is small enough to save in localStorage, do so
+         if(e.target.files[0].size <= (3.5 * 1024 * 1024)) { // 3.5 MiB
+             // base64 encode
+             const reader = new FileReader();
+             reader.readAsDataURL(e.target.files[0]);
+             reader.onload = () => {
+                 localStorage.setItem("sound", reader.result);
+             }
+         } else {
+             // if the sound was saved to indexedDB instead, this would not be necessary
+             console.warn("notification file is too big to save,\nbut it will still work for this session");
+         }
+         
+     });
+
+     // set volume and save it
      volume.addEventListener("change", function (e) {
-	 sound.volume = (e.target.value / 100);
-     })
+         sound.volume = (e.target.value / 100);
+         localStorage.setItem("volume", Number(e.target.value));
+     });
 
-     
-     // base64 encoded to keep it a single file
-     sound = new Audio("data:audio/mp3;base64," +
-`//uYZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAHAAARuAA3Nzc3
+     // Default notification sound, base64 encoded to keep this project a single file
+     const originalSound = "data:audio/mp3;base64," +
+                           `//uYZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAHAAARuAA3Nzc3
 Nzc3Nzc3Nzc3N1hYWFhYWFhYWFhYWFhYfX19fX19fX19fX19fX2srKysrKysrKysrKysrKzIyMjI
 yMjIyMjIyMjIyO3t7e3t7e3t7e3t7e3t//////////////////8AAABQTEFNRTMuMTAwBKAAAAAA
 AAAAADUgJAQ5LQAB4AAAEbhAQWnGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -462,6 +583,7 @@ ACAAADSDgAAEqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
 qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
 qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
 qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
-qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq`)
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq`;
+
     </script>
 </html>
