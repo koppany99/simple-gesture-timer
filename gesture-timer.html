@@ -176,6 +176,18 @@
 
          function togglePause() {
              paused = !paused;
+	     if(paused) {
+		 pauseButton.value = "unpause"
+	     } else {
+		 pauseButton.value = "pause"
+	     }
+             if(hideOnPause.checked) {
+                 if(paused) {
+                     hideId('image');
+                 } else {
+                     unhideId('image');
+                 }
+             }
          }
 
          function resetSound() {
@@ -226,29 +238,29 @@
          
          // called once every second, after session is started
          function app() {
-             if(!paused) {
-                 unhideId('image');
-		 // countdown, or switch image
-                 if(countdown > 1) {
-                     countdown--;
+             if(paused) return;
+
+             // should be unnecessary, just to be safe
+             unhideId('image');
+             
+             // countdown, or switch image
+             if(countdown > 1) {
+                 countdown--;
+             } else {
+                 // switch image, or stop timer
+                 if(displayedImages.length < Number(imagecount.value)) {
+                     displayNextImage();
                  } else {
-		     // switch image, or stop timer
-                     if(displayedImages.length < Number(imagecount.value)) {
-                         displayNextImage();
-                     } else {
-			 stopTimer();
-                     }
+                     stopTimer();
                  }
-		 // play sound
-                 if(playNotif.checked && countdown === Number(notifyBefore.value)) {
-                     sound.play();
-                 }
-                 
-                 // refresh ui timers
-                 displayRemaining();
-             } else if(hideOnPause.checked) {
-                 hideId('image');
              }
+             // play sound
+             if(playNotif.checked && countdown === Number(notifyBefore.value)) {
+                 sound.play();
+             }
+             
+             // refresh ui timers
+             displayRemaining();
          }
          
          function startTimer() {
@@ -397,7 +409,7 @@
                     <input type="button" onclick="nextImage()" value="next"/>
                 </div>
                 <div class="buttons"> 
-                    <input type="button" onclick="togglePause()" value="pause"/>
+                    <input id="pauseButton" type="button" onclick="togglePause()" value="pause"/>
                     <input type="button" onclick="stopTimer()" value="stop"/>
                 </div>
             </div>
