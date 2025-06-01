@@ -250,6 +250,12 @@
 	 // make loaded *image* files global
 	 window.imageFiles = [...e.target.files]
              .filter((image) => image.type.startsWith('image'));
+	 // file selector workaround
+	 let list = new DataTransfer();
+	 for (const file of window.imageFiles) {
+             list.items.add(file);
+	 }
+	 e.target.files = list.files;
      }
      
      files.addEventListener("change", handleFileEvent);
