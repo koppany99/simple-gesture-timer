@@ -293,15 +293,17 @@
                         <input type="checkbox" checked="true" id="playNotif"/>
                         <label for="playNotif">Play sound before next image</label>
                     </div>
-                    <div>
-                        <label for="soundUpload">Custom sound:</label><br>
-                        <input type="file" id="soundUpload" accept="audio/*" /><br/>
-                        <input type="button" onclick="sound.play()" value="Test Sound" />
-                    </div>
 		    <div>
 			<label for="notifyBefore">Play sound at last x seconds:</label><br>      
                         <input type="number" value="10" min="1" id="notifyBefore"/>
 		    </div>
+                    <div>
+                        <label for="soundUpload">Custom sound:</label><br>
+                        <input type="file" id="soundUpload" accept="audio/*" /><br>
+			<label for="volume">Volume:</label><br>
+			<input type="range" id="volume" name="volume" value="100" min="0" max="100" />
+                        <input type="button" onclick="sound.play()" value="Test Sound" /> <br>
+                    </div>
                 </div>
                 <input type="button" onclick="startTimer()" value="start"/>
             </div>
@@ -372,6 +374,10 @@
      let sound;
      soundUpload.addEventListener("change", function (e) {
          sound = new Audio(URL.createObjectURL(e.target.files[0]));
+     })
+
+     volume.addEventListener("change", function (e) {
+	 sound.volume = (e.target.value / 100);
      })
 
      
