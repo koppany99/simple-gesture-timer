@@ -18,6 +18,8 @@ free program to do it with, so I made this.
 - hide current image on pause (optional)
 - skip current image
 - play sound before next image (optional)
+- contrast adjustment
+- black and white mode
 - show all the non-skipped images after the session
 
 * How to install

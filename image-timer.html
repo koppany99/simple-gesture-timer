@@ -5,13 +5,18 @@
         <title>Image Timer!</title>
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <meta name="description" content="" />
-        <style>    
+        <style>
+        :root {
+            --contrast-value: 1;
+            --grayscale-value: 0;
+        }
          #image {
              object-fit: contain;
              width: 100%;
              height: 100%;
-             max-height: 90vh;
+             max-height: 93vh;
              max-width: 90vw;
+             filter: grayscale(var(--grayscale-value)) contrast(var(--contrast-value));
          }
          body {
              margin: 0;
@@ -50,6 +55,10 @@
          }
 
          #control {
+             position: absolute;
+             left: 2em;
+             top: 2em;
+             z-index: 5;
              display: flex;
              flex-direction: column;
              align-items: center;
@@ -429,6 +438,13 @@
                     <input id="pauseButton" type="button" onclick="togglePause()" value="pause"/>
                     <input type="button" onclick="stopTimer()" value="stop"/>
                 </div>
+                <div>
+                    <input type="checkbox" id="bnw"/>
+                    <label for="bnw">Black and White</label>
+                    <br>
+                    <label for="contrast">Contrast</label><br>
+                    <input type="range" min=1 max=2 step=0.1 value="1" id="contrast"/>
+                </div>
             </div>
             <div id="imagesRemaining"></div>
             <div id="timeRemaining"></div>      
@@ -459,7 +475,17 @@
      // fixing it would be difficult and might be confusing
      files.addEventListener("change", handleFileEvent);
      directory.addEventListener("change", handleFileEvent);
+     bnw.addEventListener("change", (e) => {
+        if(e.target.checked) {
+            document.documentElement.style.setProperty("--grayscale-value", 1);
+        } else {
+            document.documentElement.style.setProperty("--grayscale-value", 0);
+        }
+     });
 
+     contrast.addEventListener("input", (e) => {
+        document.documentElement.style.setProperty("--contrast-value", e.target.value);
+     })
      // translate seconds to minutes and minutes to hours
      function tallyTimer() {
          let seconds = Number(timerSeconds.value);
